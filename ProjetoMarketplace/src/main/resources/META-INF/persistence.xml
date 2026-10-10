@@ -1,0 +1,36 @@
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
+    <!-- Define a unidade de persistência e a transação -->
+    <persistence-unit name="MarketplacePU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <!-- Registro das classes -->
+        <class>projeto.marketplace.model.Marketplace</class>
+        <class>projeto.marketplace.model.LogisticaEntrega</class>
+        <class>projeto.marketplace.model.Cliente</class>
+        <class>projeto.marketplace.model.Vendedor</class>
+        <class>projeto.marketplace.model.Produto</class>
+        <class>projeto.marketplace.model.Pedido</class>
+        <class>projeto.marketplace.model.Pagamento</class>
+        <class>projeto.marketplace.model.CampanhaMarketing</class>
+        <class>projeto.marketplace.model.FinanceiroMensal</class>
+        <class>projeto.marketplace.model.AtendimentoSatisfacao</class>
+
+        <properties>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:file:./database/marketplace;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE"/>
+            <property name="jakarta.persistence.jdbc.user" value="sa"/>
+            <property name="jakarta.persistence.jdbc.password" value=""/>
+
+            <!-- 1. MUDE DE 'update' PARA 'create': Isso recria o banco a cada execução e limpa os dados antigos -->
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
+
+            <property name="hibernate.show_sql" value="true"/>
+
+            <!-- 2. ADICIONE ESTAS LINHAS: Elas ativam o Batch Insert no Hibernate puro -->
+            <property name="hibernate.jdbc.batch_size" value="50"/>
+            <property name="hibernate.order_inserts" value="true"/>
+            <property name="hibernate.order_updates" value="true"/>
+
+            <property name="hibernate.generate_statistics" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>
