@@ -23,7 +23,7 @@
             <!-- 1. MUDE DE 'update' PARA 'create': Isso recria o banco a cada execução e limpa os dados antigos -->
             <property name="hibernate.hbm2ddl.auto" value="create"/>
 
-            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.show_sql" value="false"/>
 
             <!-- 2. ADICIONE ESTAS LINHAS: Elas ativam o Batch Insert no Hibernate puro -->
             <property name="hibernate.jdbc.batch_size" value="50"/>

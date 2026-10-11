@@ -66,6 +66,25 @@ public class ImportadorExcel {
             em.getTransaction().commit(); // Salva tudo definitivamente no banco
             System.out.println("Importação concluída com sucesso!");
 
+            // =========================================================
+            // COLE O CÓDIGO DO SELECT AQUI:
+            // =========================================================
+            System.out.println("\n--- Buscando os 5 primeiros Marketplaces ---");
+
+            // Fazendo um SELECT limitando a 5 resultados
+            java.util.List<Marketplace> primeirosMarketplaces = em.createQuery("SELECT m FROM Marketplace m", Marketplace.class)
+                    .setMaxResults(5)
+                    .getResultList();
+
+            // Imprimindo os resultados
+            for (Marketplace m : primeirosMarketplaces) {
+                System.out.println("ID: " + m.getMarketplaceId() +
+                        " | Nome: " + m.getNomeMarketplace() +
+                        " | Segmento: " + m.getSegmento() +
+                        " | Cidade: " + m.getCidadeSede());
+            }
+            // =========================================================
+
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -76,6 +95,7 @@ public class ImportadorExcel {
             emf.close();
         }
     }
+    // ... (restante dos métodos)
 
     // 1. Tabela Marketplace
     private static void importarMarketplaces(Workbook workbook, EntityManager em) {
