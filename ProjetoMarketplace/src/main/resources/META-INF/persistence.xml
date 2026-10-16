@@ -21,7 +21,7 @@
             <property name="jakarta.persistence.jdbc.password" value=""/>
 
             <!-- 1. MUDE DE 'update' PARA 'create': Isso recria o banco a cada execução e limpa os dados antigos -->
-            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
 
             <property name="hibernate.show_sql" value="false"/>
 
