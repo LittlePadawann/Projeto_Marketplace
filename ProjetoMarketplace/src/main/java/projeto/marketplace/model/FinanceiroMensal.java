@@ -10,10 +10,11 @@ public class FinanceiroMensal {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "financeiro_seq")
     @SequenceGenerator(name = "financeiro_seq", sequenceName = "seq_financeiro", allocationSize = 50)
-    @Column(name = "FINANCEIRO_ID")
+    @Column(name = "ID_FINANCEIRO")
     private Integer financeiroId;
 
-    @ManyToOne @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
     @Column(name = "DATA_REFERENCIA")

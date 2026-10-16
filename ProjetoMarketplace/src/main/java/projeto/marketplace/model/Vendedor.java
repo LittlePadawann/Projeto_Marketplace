@@ -10,10 +10,10 @@ public class Vendedor {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "vendedor_seq")
     @SequenceGenerator(name = "vendedor_seq", sequenceName = "seq_vendedor", allocationSize = 50)
-    @Column(name = "VENDEDOR_ID")
+    @Column(name = "ID_VENDEDOR")
     private Integer vendedorId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 

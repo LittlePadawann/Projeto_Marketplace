@@ -11,13 +11,15 @@ public class AtendimentoSatisfacao {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "atendimento_satisfacao_seq")
     @SequenceGenerator(name = "atendimento_satisfacao_seq", sequenceName = "seq_atendimento_satisfacao", allocationSize = 50)
-    @Column(name = "ATENDIMENTO_ID")
+    @Column(name = "ID_ATENDIMENTO")
     private Integer atendimentoId;
 
-    @ManyToOne @JoinColumn(name = "CLIENTE_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CLIENTE_ID", nullable = false)
     private Cliente cliente;
 
-    @ManyToOne @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
     @Column(name = "DATA_ATENDIMENTO")

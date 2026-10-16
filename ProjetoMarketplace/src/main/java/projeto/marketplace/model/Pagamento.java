@@ -11,16 +11,19 @@ public class Pagamento {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pagamento_seq")
     @SequenceGenerator(name = "pagamento_seq", sequenceName = "seq_pagamento", allocationSize = 50)
-    @Column(name = "PAGAMENTO_ID")
+    @Column(name = "ID_PAGAMENTO")
     private Integer pagamentoId;
 
-    @ManyToOne @JoinColumn(name = "PEDIDO_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PEDIDO_ID", nullable = false)
     private Pedido pedido;
 
-    @ManyToOne @JoinColumn(name = "CLIENTE_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CLIENTE_ID", nullable = false)
     private Cliente cliente;
 
-    @ManyToOne @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
     @Column(name = "DATA_PAGAMENTO")

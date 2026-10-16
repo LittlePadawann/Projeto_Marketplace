@@ -9,7 +9,7 @@ public class Marketplace {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "marketplace_seq")
     @SequenceGenerator(name = "marketplace_seq", sequenceName = "seq_marketplace", allocationSize = 50)
-    @Column(name = "MARKETPLACE_ID")
+    @Column(name = "ID_MARKETPLACE")
     private Integer marketplaceId;
 
     @Column(name = "NOME_MARKETPLACE", length = 150)

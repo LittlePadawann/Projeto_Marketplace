@@ -10,10 +10,10 @@ public class Cliente {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cliente_seq")
     @SequenceGenerator(name = "cliente_seq", sequenceName = "seq_cliente", allocationSize = 50)
-    @Column(name = "CLIENTE_ID")
+    @Column(name = "ID_CLIENTE")
     private Integer clienteId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 

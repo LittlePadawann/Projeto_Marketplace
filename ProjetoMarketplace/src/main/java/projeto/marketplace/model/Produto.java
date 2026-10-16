@@ -9,14 +9,14 @@ public class Produto {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "produto_seq")
     @SequenceGenerator(name = "produto_seq", sequenceName = "seq_produto", allocationSize = 50)
-    @Column(name = "PRODUTO_ID")
+    @Column(name = "ID_PRODUTO")
     private Integer produtoId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "VENDEDOR_ID", nullable = false)
     private Vendedor vendedor;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 

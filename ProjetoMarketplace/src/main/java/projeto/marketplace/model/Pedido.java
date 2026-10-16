@@ -10,19 +10,23 @@ public class Pedido {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pedido_seq")
     @SequenceGenerator(name = "pedido_seq", sequenceName = "seq_pedido", allocationSize = 50)
-    @Column(name = "PEDIDO_ID")
+    @Column(name = "ID_PEDIDO")
     private Integer pedidoId;
 
-    @ManyToOne @JoinColumn(name = "CLIENTE_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CLIENTE_ID", nullable = false)
     private Cliente cliente;
 
-    @ManyToOne @JoinColumn(name = "VENDEDOR_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "VENDEDOR_ID", nullable = false)
     private Vendedor vendedor;
 
-    @ManyToOne @JoinColumn(name = "PRODUTO_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PRODUTO_ID", nullable = false)
     private Produto produto;
 
-    @ManyToOne @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
     @Column(name = "DATA_PEDIDO")

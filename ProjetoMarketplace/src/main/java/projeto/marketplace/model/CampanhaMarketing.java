@@ -10,10 +10,11 @@ public class CampanhaMarketing {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "campanha_seq")
     @SequenceGenerator(name = "campanha_seq", sequenceName = "seq_campanha", allocationSize = 50)
-    @Column(name = "CAMPANHA_ID")
+    @Column(name = "ID_CAMPANHA")
     private Integer campanhaId;
 
-    @ManyToOne @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
     @Column(name = "DATA_REFERENCIA")

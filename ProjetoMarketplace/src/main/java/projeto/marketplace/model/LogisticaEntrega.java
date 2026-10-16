@@ -11,13 +11,15 @@ public class LogisticaEntrega {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "logistica_seq")
     @SequenceGenerator(name = "logistica_seq", sequenceName = "seq_logistica", allocationSize = 50)
-    @Column(name = "LOGISTICA_ID")
+    @Column(name = "ID_LOGISTICA")
     private Integer logisticaId;
 
-    @ManyToOne @JoinColumn(name = "PEDIDO_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PEDIDO_ID", nullable = false)
     private Pedido pedido;
 
-    @ManyToOne @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
     @Column(name = "DATA_ENVIO")

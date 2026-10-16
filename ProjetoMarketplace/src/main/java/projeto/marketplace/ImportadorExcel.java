@@ -67,8 +67,8 @@ public class ImportadorExcel {
             System.out.println("Importação concluída com sucesso!");
 
             // =========================================================
-            // COLE O CÓDIGO DO SELECT AQUI:
-            // =========================================================
+            // SELECT
+
             System.out.println("\n--- Buscando os 5 primeiros Marketplaces ---");
 
             // Fazendo um SELECT limitando a 5 resultados
@@ -95,7 +95,6 @@ public class ImportadorExcel {
             emf.close();
         }
     }
-    // ... (restante dos métodos)
 
     // 1. Tabela Marketplace
     private static void importarMarketplaces(Workbook workbook, EntityManager em) {
@@ -115,14 +114,14 @@ public class ImportadorExcel {
             mk.setEstado(row.getCell(4).getStringCellValue());
             mk.setRegiao(row.getCell(5).getStringCellValue());
 
-            // Lendo Double e Integer
-            mk.setLatitude(row.getCell(6).getNumericCellValue());
-            mk.setLongitude(row.getCell(7).getNumericCellValue());
-            mk.setAnoFundacao((int) row.getCell(8).getNumericCellValue());
+            // Lendo Double e Integer com os novos métodos seguros
+            mk.setLatitude(lerDouble(row.getCell(6)));
+            mk.setLongitude(lerDouble(row.getCell(7)));
+            mk.setAnoFundacao(lerInteger(row.getCell(8)));
             mk.setPorte(row.getCell(9).getStringCellValue());
             mk.setModeloNegocio(row.getCell(10).getStringCellValue());
-            mk.setGmvAnualEstimado(row.getCell(11).getNumericCellValue());
-            mk.setTakeRateMedioPercentual(row.getCell(12).getNumericCellValue());
+            mk.setGmvAnualEstimado(lerDouble(row.getCell(11)));
+            mk.setTakeRateMedioPercentual(lerDouble(row.getCell(12)));
 
             em.persist(mk);
         }
@@ -140,15 +139,15 @@ public class ImportadorExcel {
             Cliente cliente = new Cliente();
 
             // Lendo FK (Marketplace)
-            int mkId = (int) row.getCell(1).getNumericCellValue();
+            int mkId = lerInteger(row.getCell(1));
             Marketplace mk = em.getReference(Marketplace.class, mkId);
             cliente.setMarketplace(mk);
 
             cliente.setCidade(row.getCell(2).getStringCellValue());
             cliente.setEstado(row.getCell(3).getStringCellValue());
             cliente.setRegiao(row.getCell(4).getStringCellValue());
-            cliente.setLatitude(row.getCell(5).getNumericCellValue());
-            cliente.setLongitude(row.getCell(6).getNumericCellValue());
+            cliente.setLatitude(lerDouble(row.getCell(5)));
+            cliente.setLongitude(lerDouble(row.getCell(6)));
             cliente.setFaixaEtaria(row.getCell(7).getStringCellValue());
             cliente.setFaixaRenda(row.getCell(8).getStringCellValue());
             cliente.setCanalAquisicao(row.getCell(9).getStringCellValue());
@@ -162,12 +161,13 @@ public class ImportadorExcel {
             }
 
             cliente.setStatusCliente(row.getCell(11).getStringCellValue());
-            cliente.setScoreChurn(row.getCell(12).getNumericCellValue());
-            cliente.setIndiceFidelidade(row.getCell(13).getNumericCellValue());
+            cliente.setScoreChurn(lerDouble(row.getCell(12)));
+            cliente.setIndiceFidelidade(lerDouble(row.getCell(13)));
 
             em.persist(cliente);
         }
     }
+
     // 3. Tabela Vendedores (Depende de Marketplace)
     private static void importarVendedores(Workbook workbook, EntityManager em) {
         Sheet sheet = workbook.getSheet("Vendedores");
@@ -180,14 +180,14 @@ public class ImportadorExcel {
             Vendedor vendedor = new Vendedor();
 
             // FK: Marketplace
-            int mkId = (int) row.getCell(1).getNumericCellValue();
+            int mkId = lerInteger(row.getCell(1));
             vendedor.setMarketplace(em.getReference(Marketplace.class, mkId));
 
             vendedor.setCidade(row.getCell(2).getStringCellValue());
             vendedor.setEstado(row.getCell(3).getStringCellValue());
             vendedor.setRegiao(row.getCell(4).getStringCellValue());
-            vendedor.setLatitude(row.getCell(5).getNumericCellValue());
-            vendedor.setLongitude(row.getCell(6).getNumericCellValue());
+            vendedor.setLatitude(lerDouble(row.getCell(5)));
+            vendedor.setLongitude(lerDouble(row.getCell(6)));
             vendedor.setTipoVendedor(row.getCell(7).getStringCellValue());
             vendedor.setCategoriaPrincipal(row.getCell(8).getStringCellValue());
 
@@ -200,8 +200,8 @@ public class ImportadorExcel {
             }
 
             vendedor.setStatusVendedor(row.getCell(10).getStringCellValue());
-            vendedor.setReputacaoMedia(row.getCell(11).getNumericCellValue());
-            vendedor.setScoreRiscoSuspensao(row.getCell(12).getNumericCellValue());
+            vendedor.setReputacaoMedia(lerDouble(row.getCell(11)));
+            vendedor.setScoreRiscoSuspensao(lerDouble(row.getCell(12)));
 
             em.persist(vendedor);
         }
@@ -219,21 +219,21 @@ public class ImportadorExcel {
             Produto produto = new Produto();
 
             // FK: Vendedor
-            int vendId = (int) row.getCell(1).getNumericCellValue();
+            int vendId = lerInteger(row.getCell(1));
             produto.setVendedor(em.getReference(Vendedor.class, vendId));
 
             // FK: Marketplace
-            int mkId = (int) row.getCell(2).getNumericCellValue();
+            int mkId = lerInteger(row.getCell(2));
             produto.setMarketplace(em.getReference(Marketplace.class, mkId));
 
             produto.setNomeProduto(row.getCell(3).getStringCellValue());
             produto.setCategoriaProduto(row.getCell(4).getStringCellValue());
-            produto.setPrecoProduto(row.getCell(5).getNumericCellValue());
-            produto.setEstoqueAtual((int) row.getCell(6).getNumericCellValue());
-            produto.setAvaliacaoMedia(row.getCell(7).getNumericCellValue());
+            produto.setPrecoProduto(lerDouble(row.getCell(5)));
+            produto.setEstoqueAtual(lerInteger(row.getCell(6)));
+            produto.setAvaliacaoMedia(lerDouble(row.getCell(7)));
             produto.setStatusProduto(row.getCell(8).getStringCellValue());
-            produto.setMargemEstimadaPercentual(row.getCell(9).getNumericCellValue());
-            produto.setScoreRiscoRuptura(row.getCell(10).getNumericCellValue());
+            produto.setMargemEstimadaPercentual(lerDouble(row.getCell(9)));
+            produto.setScoreRiscoRuptura(lerDouble(row.getCell(10)));
 
             em.persist(produto);
         }
@@ -251,10 +251,10 @@ public class ImportadorExcel {
             Pedido pedido = new Pedido();
 
             // Lendo as 4 FKs
-            pedido.setCliente(em.getReference(Cliente.class, (int) row.getCell(1).getNumericCellValue()));
-            pedido.setVendedor(em.getReference(Vendedor.class, (int) row.getCell(2).getNumericCellValue()));
-            pedido.setProduto(em.getReference(Produto.class, (int) row.getCell(3).getNumericCellValue()));
-            pedido.setMarketplace(em.getReference(Marketplace.class, (int) row.getCell(4).getNumericCellValue()));
+            pedido.setCliente(em.getReference(Cliente.class, lerInteger(row.getCell(1))));
+            pedido.setVendedor(em.getReference(Vendedor.class, lerInteger(row.getCell(2))));
+            pedido.setProduto(em.getReference(Produto.class, lerInteger(row.getCell(3))));
+            pedido.setMarketplace(em.getReference(Marketplace.class, lerInteger(row.getCell(4))));
 
             // Data
             Cell cellData = row.getCell(5);
@@ -265,19 +265,20 @@ public class ImportadorExcel {
             }
 
             pedido.setStatusPedido(row.getCell(6).getStringCellValue());
-            pedido.setQuantidadeItens((int) row.getCell(7).getNumericCellValue());
-            pedido.setValorItens(row.getCell(8).getNumericCellValue());
-            pedido.setDesconto(row.getCell(9).getNumericCellValue());
-            pedido.setValorFrete(row.getCell(10).getNumericCellValue());
-            pedido.setValorTotal(row.getCell(11).getNumericCellValue());
-            pedido.setReceitaComissao(row.getCell(12).getNumericCellValue());
+            pedido.setQuantidadeItens(lerInteger(row.getCell(7)));
+            pedido.setValorItens(lerDouble(row.getCell(8)));
+            pedido.setDesconto(lerDouble(row.getCell(9)));
+            pedido.setValorFrete(lerDouble(row.getCell(10)));
+            pedido.setValorTotal(lerDouble(row.getCell(11)));
+            pedido.setReceitaComissao(lerDouble(row.getCell(12)));
             pedido.setCanalVenda(row.getCell(13).getStringCellValue());
-            pedido.setAvaliacaoCliente((int) row.getCell(14).getNumericCellValue());
-            pedido.setProbabilidadeRecompra(row.getCell(15).getNumericCellValue());
+            pedido.setAvaliacaoCliente(lerInteger(row.getCell(14)));
+            pedido.setProbabilidadeRecompra(lerDouble(row.getCell(15)));
 
             em.persist(pedido);
         }
     }
+
     // 6. Tabela Pagamentos (Depende de Pedido, Cliente e Marketplace)
     private static void importarPagamentos(Workbook workbook, EntityManager em) {
         Sheet sheet = workbook.getSheet("Pagamentos");
@@ -290,9 +291,9 @@ public class ImportadorExcel {
             Pagamento pag = new Pagamento();
 
             // Lendo as 3 FKs
-            pag.setPedido(em.getReference(Pedido.class, (int) row.getCell(1).getNumericCellValue()));
-            pag.setCliente(em.getReference(Cliente.class, (int) row.getCell(2).getNumericCellValue()));
-            pag.setMarketplace(em.getReference(Marketplace.class, (int) row.getCell(3).getNumericCellValue()));
+            pag.setPedido(em.getReference(Pedido.class, lerInteger(row.getCell(1))));
+            pag.setCliente(em.getReference(Cliente.class, lerInteger(row.getCell(2))));
+            pag.setMarketplace(em.getReference(Marketplace.class, lerInteger(row.getCell(3))));
 
             // Data
             Cell cellData = row.getCell(4);
@@ -302,11 +303,11 @@ public class ImportadorExcel {
                 pag.setDataPagamento(data);
             }
 
-            pag.setValorPago(row.getCell(5).getNumericCellValue());
+            pag.setValorPago(lerDouble(row.getCell(5)));
             pag.setFormaPagamento(row.getCell(6).getStringCellValue());
             pag.setStatusPagamento(row.getCell(7).getStringCellValue());
-            pag.setTaxaProcessamento(row.getCell(8).getNumericCellValue());
-            pag.setScoreRiscoFraude(row.getCell(9).getNumericCellValue());
+            pag.setTaxaProcessamento(lerDouble(row.getCell(8)));
+            pag.setScoreRiscoFraude(lerDouble(row.getCell(9)));
 
             // Lendo Booleano (Sim/Não)
             pag.setFraudeConfirmada(lerBooleanoSimNao(row.getCell(10)));
@@ -327,8 +328,8 @@ public class ImportadorExcel {
             LogisticaEntrega log = new LogisticaEntrega();
 
             // FKs
-            log.setPedido(em.getReference(Pedido.class, (int) row.getCell(1).getNumericCellValue()));
-            log.setMarketplace(em.getReference(Marketplace.class, (int) row.getCell(2).getNumericCellValue()));
+            log.setPedido(em.getReference(Pedido.class, lerInteger(row.getCell(1))));
+            log.setMarketplace(em.getReference(Marketplace.class, lerInteger(row.getCell(2))));
 
             // Data
             Cell cellData = row.getCell(3);
@@ -339,14 +340,14 @@ public class ImportadorExcel {
             }
 
             log.setModalidadeEntrega(row.getCell(4).getStringCellValue());
-            log.setPrazoPrometidoDias((int) row.getCell(5).getNumericCellValue());
-            log.setPrazoRealDias((int) row.getCell(6).getNumericCellValue());
+            log.setPrazoPrometidoDias(lerInteger(row.getCell(5)));
+            log.setPrazoRealDias(lerInteger(row.getCell(6)));
 
             // Booleano
             log.setEntregaAtrasada(lerBooleanoSimNao(row.getCell(7)));
 
-            log.setCustoLogistico(row.getCell(8).getNumericCellValue());
-            log.setScoreRiscoAtraso(row.getCell(9).getNumericCellValue());
+            log.setCustoLogistico(lerDouble(row.getCell(8)));
+            log.setScoreRiscoAtraso(lerDouble(row.getCell(9)));
 
             // Booleano
             log.setDevolucaoLogistica(lerBooleanoSimNao(row.getCell(10)));
@@ -366,7 +367,7 @@ public class ImportadorExcel {
 
             CampanhaMarketing camp = new CampanhaMarketing();
 
-            camp.setMarketplace(em.getReference(Marketplace.class, (int) row.getCell(1).getNumericCellValue()));
+            camp.setMarketplace(em.getReference(Marketplace.class, lerInteger(row.getCell(1))));
 
             // Data
             Cell cellData = row.getCell(2);
@@ -378,12 +379,12 @@ public class ImportadorExcel {
 
             camp.setCanalMarketing(row.getCell(3).getStringCellValue());
             camp.setCategoriaFoco(row.getCell(4).getStringCellValue());
-            camp.setInvestimentoMarketing(row.getCell(5).getNumericCellValue());
-            camp.setVisitas((int) row.getCell(6).getNumericCellValue());
-            camp.setPedidosGerados((int) row.getCell(7).getNumericCellValue());
-            camp.setTaxaConversaoPercentual(row.getCell(8).getNumericCellValue());
-            camp.setRoas(row.getCell(9).getNumericCellValue());
-            camp.setProbabilidadeConversao(row.getCell(10).getNumericCellValue());
+            camp.setInvestimentoMarketing(lerDouble(row.getCell(5)));
+            camp.setVisitas(lerInteger(row.getCell(6)));
+            camp.setPedidosGerados(lerInteger(row.getCell(7)));
+            camp.setTaxaConversaoPercentual(lerDouble(row.getCell(8)));
+            camp.setRoas(lerDouble(row.getCell(9)));
+            camp.setProbabilidadeConversao(lerDouble(row.getCell(10)));
 
             em.persist(camp);
         }
@@ -400,7 +401,7 @@ public class ImportadorExcel {
 
             FinanceiroMensal fin = new FinanceiroMensal();
 
-            fin.setMarketplace(em.getReference(Marketplace.class, (int) row.getCell(1).getNumericCellValue()));
+            fin.setMarketplace(em.getReference(Marketplace.class, lerInteger(row.getCell(1))));
 
             // Data
             Cell cellData = row.getCell(2);
@@ -410,16 +411,16 @@ public class ImportadorExcel {
                 fin.setDataReferencia(data);
             }
 
-            fin.setCompradoresAtivos((int) row.getCell(3).getNumericCellValue());
-            fin.setGmv(row.getCell(4).getNumericCellValue());
-            fin.setReceitaComissao(row.getCell(5).getNumericCellValue());
-            fin.setReceitaAds(row.getCell(6).getNumericCellValue());
-            fin.setReceitaLogistica(row.getCell(7).getNumericCellValue());
-            fin.setCustoOperacional(row.getCell(8).getNumericCellValue());
-            fin.setCac(row.getCell(9).getNumericCellValue());
-            fin.setLtv(row.getCell(10).getNumericCellValue());
-            fin.setTaxaChurnPercentual(row.getCell(11).getNumericCellValue());
-            fin.setResultadoOperacional(row.getCell(12).getNumericCellValue());
+            fin.setCompradoresAtivos(lerInteger(row.getCell(3)));
+            fin.setGmv(lerDouble(row.getCell(4)));
+            fin.setReceitaComissao(lerDouble(row.getCell(5)));
+            fin.setReceitaAds(lerDouble(row.getCell(6)));
+            fin.setReceitaLogistica(lerDouble(row.getCell(7)));
+            fin.setCustoOperacional(lerDouble(row.getCell(8)));
+            fin.setCac(lerDouble(row.getCell(9)));
+            fin.setLtv(lerDouble(row.getCell(10)));
+            fin.setTaxaChurnPercentual(lerDouble(row.getCell(11)));
+            fin.setResultadoOperacional(lerDouble(row.getCell(12)));
 
             em.persist(fin);
         }
@@ -436,8 +437,8 @@ public class ImportadorExcel {
 
             AtendimentoSatisfacao at = new AtendimentoSatisfacao();
 
-            at.setCliente(em.getReference(Cliente.class, (int) row.getCell(1).getNumericCellValue()));
-            at.setMarketplace(em.getReference(Marketplace.class, (int) row.getCell(2).getNumericCellValue()));
+            at.setCliente(em.getReference(Cliente.class, lerInteger(row.getCell(1))));
+            at.setMarketplace(em.getReference(Marketplace.class, lerInteger(row.getCell(2))));
 
             // Data
             Cell cellData = row.getCell(3);
@@ -449,12 +450,12 @@ public class ImportadorExcel {
 
             at.setCanalAtendimento(row.getCell(4).getStringCellValue());
             at.setAssunto(row.getCell(5).getStringCellValue());
-            at.setTempoAtendimentoMin(row.getCell(6).getNumericCellValue());
+            at.setTempoAtendimentoMin(lerDouble(row.getCell(6)));
 
             // Booleano
             at.setResolvidoPrimeiroContato(lerBooleanoSimNao(row.getCell(7)));
 
-            at.setNotaNps((int) row.getCell(8).getNumericCellValue());
+            at.setNotaNps(lerInteger(row.getCell(8)));
             at.setCategoriaNps(row.getCell(9).getStringCellValue());
 
             em.persist(at);
@@ -469,5 +470,43 @@ public class ImportadorExcel {
             return "Sim".equalsIgnoreCase(val);
         }
         return false;
+    }
+
+    // --- METODO AUXILIAR PARA DECIMAIS (DOUBLE) ---
+    private static Double lerDouble(Cell cell) {
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return 0.0;
+        }
+        if (cell.getCellType() == CellType.NUMERIC) {
+            return cell.getNumericCellValue();
+        }
+        if (cell.getCellType() == CellType.STRING) {
+            try {
+                String valor = cell.getStringCellValue().replace(",", ".").trim();
+                return Double.parseDouble(valor);
+            } catch (NumberFormatException e) {
+                return 0.0;
+            }
+        }
+        return 0.0;
+    }
+
+    // --- METODO AUXILIAR PARA INTEIROS (INTEGER) ---
+    private static Integer lerInteger(Cell cell) {
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return 0;
+        }
+        if (cell.getCellType() == CellType.NUMERIC) {
+            return (int) cell.getNumericCellValue();
+        }
+        if (cell.getCellType() == CellType.STRING) {
+            try {
+                String valor = cell.getStringCellValue().trim();
+                return Integer.parseInt(valor);
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+        return 0;
     }
 }
