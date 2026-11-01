@@ -22,10 +22,6 @@ public class Pagamento {
     @JoinColumn(name = "CLIENTE_ID", nullable = false)
     private Cliente cliente;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
-    private Marketplace marketplace;
-
     @Column(name = "DATA_PAGAMENTO")
     private LocalDate dataPagamento;
 
@@ -73,14 +69,6 @@ public class Pagamento {
 
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
-    }
-
-    public Marketplace getMarketplace() {
-        return marketplace;
-    }
-
-    public void setMarketplace(Marketplace marketplace) {
-        this.marketplace = marketplace;
     }
 
     public LocalDate getDataPagamento() {

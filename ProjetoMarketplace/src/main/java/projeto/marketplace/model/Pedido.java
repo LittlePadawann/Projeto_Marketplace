@@ -29,6 +29,12 @@ public class Pedido {
     @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Pagamento> pagamentos;
+
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<LogisticaEntrega> entregas;
+
     @Column(name = "DATA_PEDIDO")
     private LocalDate dataPedido;
 

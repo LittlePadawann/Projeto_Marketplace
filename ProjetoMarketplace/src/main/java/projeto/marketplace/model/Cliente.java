@@ -17,6 +17,15 @@ public class Cliente {
     @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Pedido> pedidos;
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Pagamento> pagamentos;
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<AtendimentoSatisfacao> atendimentos;
+
     @Column(name = "CIDADE")
     private String cidade;
 

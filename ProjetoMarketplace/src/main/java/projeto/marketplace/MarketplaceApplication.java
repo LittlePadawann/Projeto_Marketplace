@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class MarketplaceApplication {
     public static void main(String[] args) {
-        // Inicia o servidor Web na porta 8080
         SpringApplication.run(MarketplaceApplication.class, args);
-        System.out.println("Servidor a correr! Aceda a http://localhost:8080/api/marketplaces");
+        System.out.println("Servidor Spring Boot iniciado! API e Banco H2 disponíveis.");
     }
 }

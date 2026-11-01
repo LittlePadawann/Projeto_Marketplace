@@ -1,103 +1,61 @@
 package projeto.marketplace;
 
-import projeto.marketplace.model.*;
-import jakarta.persistence.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import projeto.marketplace.model.*;
 
 import java.io.FileInputStream;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
-public class ImportadorExcel {
+@Component
+public class ImportadorExcel implements CommandLineRunner {
 
-    public static void main(String[] args) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("MarketplacePU");
-        EntityManager em = emf.createEntityManager();
+    // O Spring injeta o EntityManager automaticamente
+    @PersistenceContext
+    private EntityManager em;
 
+    @Override
+    @Transactional // Garante que tudo rode dentro de uma transação do Spring
+    public void run(String... args) throws Exception {
         String arquivo = "08_marketplaces.xlsx";
 
         try (FileInputStream fis = new FileInputStream(arquivo);
              Workbook workbook = new XSSFWorkbook(fis)) {
 
-            em.getTransaction().begin();
-
             System.out.println("Importando Marketplaces...");
-            importarMarketplaces(workbook, em);
+            importarMarketplaces(workbook);
+            em.flush(); em.clear(); // Salva e limpa a memória
 
-            // O flush garante que os IDs dos Marketplaces sejam gerados no H2 agora,
-            // pois Clientes e Vendedores precisam desses IDs.
-            em.flush();
-
-            System.out.println("Importando Clientes...");
-            importarClientes(workbook, em);
-
-            System.out.println("Importando Vendedores...");
-            importarVendedores(workbook, em);
-
-            System.out.println("Importando Produtos...");
-            importarProdutos(workbook, em);
-
-            // O flush aqui é super importante porque a tabela de Pedidos precisa
-            // das PKs de Clientes, Vendedores e Produtos geradas no banco!
-            em.flush();
+            System.out.println("Importando Clientes e Vendedores...");
+            importarClientes(workbook);
+            importarVendedores(workbook);
+            importarProdutos(workbook);
+            em.flush(); em.clear();
 
             System.out.println("Importando Pedidos...");
-            importarPedidos(workbook, em);
+            importarPedidos(workbook);
+            em.flush(); em.clear();
 
-            // Último flush antes das tabelas que dependem de Pedidos
-            em.flush();
+            System.out.println("Importando Tabelas Auxiliares...");
+            importarPagamentos(workbook);
+            importarLogistica(workbook);
+            importarAtendimento(workbook);
 
-            System.out.println("Importando Pagamentos...");
-            importarPagamentos(workbook, em);
-
-            System.out.println("Importando Logística...");
-            importarLogistica(workbook, em);
-
-            System.out.println("Importando Campanhas...");
-            importarCampanhas(workbook, em);
-
-            System.out.println("Importando Financeiro...");
-            importarFinanceiro(workbook, em);
-
-            System.out.println("Importando Atendimento...");
-            importarAtendimento(workbook, em);
-
-            em.getTransaction().commit(); // Salva tudo definitivamente no banco
             System.out.println("Importação concluída com sucesso!");
 
-            // =========================================================
-            // SELECT
-
-            System.out.println("\n--- Buscando os 5 primeiros Marketplaces ---");
-
-            // Fazendo um SELECT limitando a 5 resultados
-            java.util.List<Marketplace> primeirosMarketplaces = em.createQuery("SELECT m FROM Marketplace m", Marketplace.class)
-                    .setMaxResults(5)
-                    .getResultList();
-
-            // Imprimindo os resultados
-            for (Marketplace m : primeirosMarketplaces) {
-                System.out.println("ID: " + m.getMarketplaceId() +
-                        " | Nome: " + m.getNomeMarketplace() +
-                        " | Segmento: " + m.getSegmento() +
-                        " | Cidade: " + m.getCidadeSede());
-            }
-            // =========================================================
-
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
             e.printStackTrace();
-        } finally {
-            em.close();
-            emf.close();
         }
     }
 
     // 1. Tabela Marketplace
-    private static void importarMarketplaces(Workbook workbook, EntityManager em) {
+    private void importarMarketplaces(Workbook workbook) {
         Sheet sheet = workbook.getSheet("Marketplaces");
         if (sheet == null) return;
 
@@ -106,29 +64,33 @@ public class ImportadorExcel {
             if (row == null) continue;
 
             Marketplace mk = new Marketplace();
-
-            // Lendo String
-            mk.setNomeMarketplace(row.getCell(1).getStringCellValue());
-            mk.setSegmento(row.getCell(2).getStringCellValue());
-            mk.setCidadeSede(row.getCell(3).getStringCellValue());
-            mk.setEstado(row.getCell(4).getStringCellValue());
-            mk.setRegiao(row.getCell(5).getStringCellValue());
+            mk.setNomeMarketplace(lerString(row.getCell(1)));
+            mk.setSegmento(lerString(row.getCell(2)));
+            mk.setCidadeSede(lerString(row.getCell(3)));
+            mk.setEstado(lerString(row.getCell(4)));
+            mk.setRegiao(lerString(row.getCell(5)));
 
             // Lendo Double e Integer com os novos métodos seguros
             mk.setLatitude(lerDouble(row.getCell(6)));
             mk.setLongitude(lerDouble(row.getCell(7)));
             mk.setAnoFundacao(lerInteger(row.getCell(8)));
-            mk.setPorte(row.getCell(9).getStringCellValue());
-            mk.setModeloNegocio(row.getCell(10).getStringCellValue());
+            mk.setPorte(lerString(row.getCell(9)));
+            mk.setModeloNegocio(lerString(row.getCell(10)));
             mk.setGmvAnualEstimado(lerDouble(row.getCell(11)));
             mk.setTakeRateMedioPercentual(lerDouble(row.getCell(12)));
 
             em.persist(mk);
+
+            // OTIMIZAÇÃO DE MEMÓRIA (Aplique isso em TODOS os métodos de importação)
+            if (i % 50 == 0) {
+                em.flush();
+                em.clear();
+            }
         }
     }
 
     // 2. Tabela Clientes (Depende de Marketplace)
-    private static void importarClientes(Workbook workbook, EntityManager em) {
+    private void importarClientes(Workbook workbook) {
         Sheet sheet = workbook.getSheet("Clientes");
         if (sheet == null) return;
 
@@ -143,14 +105,14 @@ public class ImportadorExcel {
             Marketplace mk = em.getReference(Marketplace.class, mkId);
             cliente.setMarketplace(mk);
 
-            cliente.setCidade(row.getCell(2).getStringCellValue());
-            cliente.setEstado(row.getCell(3).getStringCellValue());
-            cliente.setRegiao(row.getCell(4).getStringCellValue());
+            cliente.setCidade(lerString(row.getCell(2)));
+            cliente.setEstado(lerString(row.getCell(3)));
+            cliente.setRegiao(lerString(row.getCell(4)));
             cliente.setLatitude(lerDouble(row.getCell(5)));
             cliente.setLongitude(lerDouble(row.getCell(6)));
-            cliente.setFaixaEtaria(row.getCell(7).getStringCellValue());
-            cliente.setFaixaRenda(row.getCell(8).getStringCellValue());
-            cliente.setCanalAquisicao(row.getCell(9).getStringCellValue());
+            cliente.setFaixaEtaria(lerString(row.getCell(7)));
+            cliente.setFaixaRenda(lerString(row.getCell(8)));
+            cliente.setCanalAquisicao(lerString(row.getCell(9)));
 
             // Lendo Data
             Cell cellData = row.getCell(10);
@@ -160,16 +122,21 @@ public class ImportadorExcel {
                 cliente.setDataCadastro(data);
             }
 
-            cliente.setStatusCliente(row.getCell(11).getStringCellValue());
+            cliente.setStatusCliente(lerString(row.getCell(11)));
             cliente.setScoreChurn(lerDouble(row.getCell(12)));
             cliente.setIndiceFidelidade(lerDouble(row.getCell(13)));
 
             em.persist(cliente);
+
+            if (i % 50 == 0) {
+                em.flush();
+                em.clear();
+            }
         }
     }
 
     // 3. Tabela Vendedores (Depende de Marketplace)
-    private static void importarVendedores(Workbook workbook, EntityManager em) {
+    private void importarVendedores(Workbook workbook) {
         Sheet sheet = workbook.getSheet("Vendedores");
         if (sheet == null) return;
 
@@ -183,13 +150,13 @@ public class ImportadorExcel {
             int mkId = lerInteger(row.getCell(1));
             vendedor.setMarketplace(em.getReference(Marketplace.class, mkId));
 
-            vendedor.setCidade(row.getCell(2).getStringCellValue());
-            vendedor.setEstado(row.getCell(3).getStringCellValue());
-            vendedor.setRegiao(row.getCell(4).getStringCellValue());
+            vendedor.setCidade(lerString(row.getCell(2)));
+            vendedor.setEstado(lerString(row.getCell(3)));
+            vendedor.setRegiao(lerString(row.getCell(4)));
             vendedor.setLatitude(lerDouble(row.getCell(5)));
             vendedor.setLongitude(lerDouble(row.getCell(6)));
-            vendedor.setTipoVendedor(row.getCell(7).getStringCellValue());
-            vendedor.setCategoriaPrincipal(row.getCell(8).getStringCellValue());
+            vendedor.setTipoVendedor(lerString(row.getCell(7)));
+            vendedor.setCategoriaPrincipal(lerString(row.getCell(8)));
 
             // Lendo Data
             Cell cellData = row.getCell(9);
@@ -199,16 +166,21 @@ public class ImportadorExcel {
                 vendedor.setDataEntrada(data);
             }
 
-            vendedor.setStatusVendedor(row.getCell(10).getStringCellValue());
+            vendedor.setStatusVendedor(lerString(row.getCell(10)));
             vendedor.setReputacaoMedia(lerDouble(row.getCell(11)));
             vendedor.setScoreRiscoSuspensao(lerDouble(row.getCell(12)));
 
             em.persist(vendedor);
+
+            if (i % 50 == 0) {
+                em.flush();
+                em.clear();
+            }
         }
     }
 
     // 4. Tabela Produtos (Depende de Vendedor e Marketplace)
-    private static void importarProdutos(Workbook workbook, EntityManager em) {
+    private void importarProdutos(Workbook workbook) {
         Sheet sheet = workbook.getSheet("Produtos");
         if (sheet == null) return;
 
@@ -226,21 +198,26 @@ public class ImportadorExcel {
             int mkId = lerInteger(row.getCell(2));
             produto.setMarketplace(em.getReference(Marketplace.class, mkId));
 
-            produto.setNomeProduto(row.getCell(3).getStringCellValue());
-            produto.setCategoriaProduto(row.getCell(4).getStringCellValue());
+            produto.setNomeProduto(lerString(row.getCell(3)));
+            produto.setCategoriaProduto(lerString(row.getCell(4)));
             produto.setPrecoProduto(lerDouble(row.getCell(5)));
             produto.setEstoqueAtual(lerInteger(row.getCell(6)));
             produto.setAvaliacaoMedia(lerDouble(row.getCell(7)));
-            produto.setStatusProduto(row.getCell(8).getStringCellValue());
+            produto.setStatusProduto(lerString(row.getCell(8)));
             produto.setMargemEstimadaPercentual(lerDouble(row.getCell(9)));
             produto.setScoreRiscoRuptura(lerDouble(row.getCell(10)));
 
             em.persist(produto);
+
+            if (i % 50 == 0) {
+                em.flush();
+                em.clear();
+            }
         }
     }
 
     // 5. Tabela Pedidos (Depende de Cliente, Vendedor, Produto e Marketplace)
-    private static void importarPedidos(Workbook workbook, EntityManager em) {
+    private void importarPedidos(Workbook workbook) {
         Sheet sheet = workbook.getSheet("Pedidos");
         if (sheet == null) return;
 
@@ -264,23 +241,28 @@ public class ImportadorExcel {
                 pedido.setDataPedido(data);
             }
 
-            pedido.setStatusPedido(row.getCell(6).getStringCellValue());
+            pedido.setStatusPedido(lerString(row.getCell(6)));
             pedido.setQuantidadeItens(lerInteger(row.getCell(7)));
             pedido.setValorItens(lerDouble(row.getCell(8)));
             pedido.setDesconto(lerDouble(row.getCell(9)));
             pedido.setValorFrete(lerDouble(row.getCell(10)));
             pedido.setValorTotal(lerDouble(row.getCell(11)));
             pedido.setReceitaComissao(lerDouble(row.getCell(12)));
-            pedido.setCanalVenda(row.getCell(13).getStringCellValue());
+            pedido.setCanalVenda(lerString(row.getCell(13)));
             pedido.setAvaliacaoCliente(lerInteger(row.getCell(14)));
             pedido.setProbabilidadeRecompra(lerDouble(row.getCell(15)));
 
             em.persist(pedido);
+
+            if (i % 50 == 0) {
+                em.flush();
+                em.clear();
+            }
         }
     }
 
     // 6. Tabela Pagamentos (Depende de Pedido, Cliente e Marketplace)
-    private static void importarPagamentos(Workbook workbook, EntityManager em) {
+    private void importarPagamentos(Workbook workbook) {
         Sheet sheet = workbook.getSheet("Pagamentos");
         if (sheet == null) return;
 
@@ -290,10 +272,9 @@ public class ImportadorExcel {
 
             Pagamento pag = new Pagamento();
 
-            // Lendo as 3 FKs
+            // Lendo as 2 FKs
             pag.setPedido(em.getReference(Pedido.class, lerInteger(row.getCell(1))));
             pag.setCliente(em.getReference(Cliente.class, lerInteger(row.getCell(2))));
-            pag.setMarketplace(em.getReference(Marketplace.class, lerInteger(row.getCell(3))));
 
             // Data
             Cell cellData = row.getCell(4);
@@ -313,11 +294,16 @@ public class ImportadorExcel {
             pag.setFraudeConfirmada(lerBooleanoSimNao(row.getCell(10)));
 
             em.persist(pag);
+
+            if (i % 50 == 0) {
+                em.flush();
+                em.clear();
+            }
         }
     }
 
     // 7. Tabela Logistica_Entregas (Depende de Pedido e Marketplace)
-    private static void importarLogistica(Workbook workbook, EntityManager em) {
+    private void importarLogistica(Workbook workbook) {
         Sheet sheet = workbook.getSheet("Logistica_Entregas");
         if (sheet == null) return;
 
@@ -339,7 +325,7 @@ public class ImportadorExcel {
                 log.setDataEnvio(data);
             }
 
-            log.setModalidadeEntrega(row.getCell(4).getStringCellValue());
+            log.setModalidadeEntrega(lerString(row.getCell(4)));
             log.setPrazoPrometidoDias(lerInteger(row.getCell(5)));
             log.setPrazoRealDias(lerInteger(row.getCell(6)));
 
@@ -353,81 +339,16 @@ public class ImportadorExcel {
             log.setDevolucaoLogistica(lerBooleanoSimNao(row.getCell(10)));
 
             em.persist(log);
-        }
-    }
 
-    // 8. Tabela Campanhas_Marketing (Depende de Marketplace)
-    private static void importarCampanhas(Workbook workbook, EntityManager em) {
-        Sheet sheet = workbook.getSheet("Campanhas_Marketing");
-        if (sheet == null) return;
-
-        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-            Row row = sheet.getRow(i);
-            if (row == null) continue;
-
-            CampanhaMarketing camp = new CampanhaMarketing();
-
-            camp.setMarketplace(em.getReference(Marketplace.class, lerInteger(row.getCell(1))));
-
-            // Data
-            Cell cellData = row.getCell(2);
-            if (cellData != null && cellData.getCellType() == CellType.NUMERIC) {
-                LocalDate data = cellData.getDateCellValue().toInstant()
-                        .atZone(ZoneId.systemDefault()).toLocalDate();
-                camp.setDataReferencia(data);
+            if (i % 50 == 0) {
+                em.flush();
+                em.clear();
             }
-
-            camp.setCanalMarketing(row.getCell(3).getStringCellValue());
-            camp.setCategoriaFoco(row.getCell(4).getStringCellValue());
-            camp.setInvestimentoMarketing(lerDouble(row.getCell(5)));
-            camp.setVisitas(lerInteger(row.getCell(6)));
-            camp.setPedidosGerados(lerInteger(row.getCell(7)));
-            camp.setTaxaConversaoPercentual(lerDouble(row.getCell(8)));
-            camp.setRoas(lerDouble(row.getCell(9)));
-            camp.setProbabilidadeConversao(lerDouble(row.getCell(10)));
-
-            em.persist(camp);
         }
     }
 
-    // 9. Tabela Financeiro_Mensal (Depende de Marketplace)
-    private static void importarFinanceiro(Workbook workbook, EntityManager em) {
-        Sheet sheet = workbook.getSheet("Financeiro_Mensal");
-        if (sheet == null) return;
-
-        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-            Row row = sheet.getRow(i);
-            if (row == null) continue;
-
-            FinanceiroMensal fin = new FinanceiroMensal();
-
-            fin.setMarketplace(em.getReference(Marketplace.class, lerInteger(row.getCell(1))));
-
-            // Data
-            Cell cellData = row.getCell(2);
-            if (cellData != null && cellData.getCellType() == CellType.NUMERIC) {
-                LocalDate data = cellData.getDateCellValue().toInstant()
-                        .atZone(ZoneId.systemDefault()).toLocalDate();
-                fin.setDataReferencia(data);
-            }
-
-            fin.setCompradoresAtivos(lerInteger(row.getCell(3)));
-            fin.setGmv(lerDouble(row.getCell(4)));
-            fin.setReceitaComissao(lerDouble(row.getCell(5)));
-            fin.setReceitaAds(lerDouble(row.getCell(6)));
-            fin.setReceitaLogistica(lerDouble(row.getCell(7)));
-            fin.setCustoOperacional(lerDouble(row.getCell(8)));
-            fin.setCac(lerDouble(row.getCell(9)));
-            fin.setLtv(lerDouble(row.getCell(10)));
-            fin.setTaxaChurnPercentual(lerDouble(row.getCell(11)));
-            fin.setResultadoOperacional(lerDouble(row.getCell(12)));
-
-            em.persist(fin);
-        }
-    }
-
-    // 10. Tabela Atendimento_Satisfacao (Depende de Cliente e Marketplace)
-    private static void importarAtendimento(Workbook workbook, EntityManager em) {
+    // 8. Tabela Atendimento_Satisfacao (Depende de Cliente e Marketplace)
+    private void importarAtendimento(Workbook workbook) {
         Sheet sheet = workbook.getSheet("Atendimento_Satisfacao");
         if (sheet == null) return;
 
@@ -448,17 +369,22 @@ public class ImportadorExcel {
                 at.setDataAtendimento(data);
             }
 
-            at.setCanalAtendimento(row.getCell(4).getStringCellValue());
-            at.setAssunto(row.getCell(5).getStringCellValue());
+            at.setCanalAtendimento(lerString(row.getCell(4)));
+            at.setAssunto(lerString(row.getCell(5)));
             at.setTempoAtendimentoMin(lerDouble(row.getCell(6)));
 
             // Booleano
             at.setResolvidoPrimeiroContato(lerBooleanoSimNao(row.getCell(7)));
 
             at.setNotaNps(lerInteger(row.getCell(8)));
-            at.setCategoriaNps(row.getCell(9).getStringCellValue());
+            at.setCategoriaNps(lerString(row.getCell(9)));
 
             em.persist(at);
+
+            if (i % 50 == 0) {
+                em.flush();
+                em.clear();
+            }
         }
     }
 
@@ -508,5 +434,14 @@ public class ImportadorExcel {
             }
         }
         return 0;
+    }
+
+    // --- METODO AUXILIAR PARA STRINGS ---
+    private String lerString(Cell cell) {
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return "";
+        }
+        DataFormatter formatter = new DataFormatter();
+        return formatter.formatCellValue(cell).trim();
     }
 }

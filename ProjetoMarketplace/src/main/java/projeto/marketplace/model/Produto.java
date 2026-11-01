@@ -20,6 +20,9 @@ public class Produto {
     @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Pedido> pedidos;
+
     @Column(name = "NOME_PRODUTO", length = 200)
     private String nomeProduto;
 

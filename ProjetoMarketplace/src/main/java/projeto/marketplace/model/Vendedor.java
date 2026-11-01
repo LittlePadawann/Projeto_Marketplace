@@ -17,6 +17,12 @@ public class Vendedor {
     @JoinColumn(name = "MARKETPLACE_ID", nullable = false)
     private Marketplace marketplace;
 
+    @OneToMany(mappedBy = "vendedor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Produto> produtos;
+
+    @OneToMany(mappedBy = "vendedor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Pedido> pedidos;
+
     @Column(name = "CIDADE")
     private String cidade;
 

@@ -12,6 +12,24 @@ public class Marketplace {
     @Column(name = "ID_MARKETPLACE")
     private Integer marketplaceId;
 
+    @OneToMany(mappedBy = "marketplace", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Cliente> clientes;
+
+    @OneToMany(mappedBy = "marketplace", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Vendedor> vendedores;
+
+    @OneToMany(mappedBy = "marketplace", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Produto> produtos;
+
+    @OneToMany(mappedBy = "marketplace", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<Pedido> pedidos;
+
+    @OneToMany(mappedBy = "marketplace", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<LogisticaEntrega> entregas;
+
+    @OneToMany(mappedBy = "marketplace", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<AtendimentoSatisfacao> atendimentos;
+
     @Column(name = "NOME_MARKETPLACE", length = 150)
     private String nomeMarketplace;
 
