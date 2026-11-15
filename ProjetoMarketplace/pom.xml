@@ -8,7 +8,6 @@
     <artifactId>ProjetoMarketplace</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <!-- Configuração base do Spring Boot -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -23,30 +22,58 @@
     </properties>
 
     <dependencies>
-        <!-- Dependência Web do Spring Boot para criar a API REST -->
+        <!-- API REST e MVC Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Facilita a comunicação com a base de dados (Substitui o EntityManager manual) -->
+        <!-- Renderização das páginas HTML (Templates) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA e Hibernate -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- Banco H2 em memória ou arquivo -->
+        <!-- Banco de Dados H2 -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.2.224</version>
+            <scope>runtime</scope>
         </dependency>
 
-        <!-- Apache POI para leitura de Excel -->
+        <!-- Apache POI para leitura de planilhas Excel -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.3</version>
         </dependency>
+
+        <!-- Spring Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Integração do Thymeleaf com Spring Security (exibir usuário logado e logout) -->
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+        </dependency>
     </dependencies>
+
+    <!-- Plugin obrigatório para gerar o JAR executável do Spring Boot -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

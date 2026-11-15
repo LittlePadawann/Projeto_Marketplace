@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Pedidos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: menu}"></div>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Mensagens de Feedback (Sucesso / Erro de Vínculo) -->
+        <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${sucesso}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${erro}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <h2>Pedidos</h2>
+        <a th:href="@{/pedidos/novo}" class="btn btn-light fw-semibold">+ Novo Pedido</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Marketplace</th>
+                <th>Qtd</th>
+                <th>Valor Total</th>
+                <th>Status</th>
+                <th class="text-end">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="ped : ${pedidos}">
+                <td th:text="${ped.pedidoId}"></td>
+                <td th:text="${ped.dataPedido}"></td>
+                <td th:text="${ped.cliente != null ? 'Cliente #' + ped.cliente.clienteId : '-'}"></td>
+                <td th:text="${ped.produto != null ? ped.produto.nomeProduto : '-'}"></td>
+                <td th:text="${ped.marketplace != null ? ped.marketplace.nomeMarketplace : '-'}"></td>
+                <td th:text="${ped.quantidadeItens}"></td>
+                <td th:text="${#numbers.formatCurrency(ped.valorTotal)}"></td>
+                <td><span class="badge bg-secondary" th:text="${ped.statusPedido}"></span></td>
+                <td class="text-end">
+                    <a th:href="@{/pedidos/editar/{id}(id=${ped.pedidoId})}" class="btn btn-sm btn-outline-warning">Editar</a>
+                    <a th:href="@{/pedidos/excluir/{id}(id=${ped.pedidoId})}" class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Deseja realmente excluir este pedido?');">Excluir</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

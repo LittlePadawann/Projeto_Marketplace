@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Marketplaces</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: menu}"></div>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Mensagens de Feedback (Sucesso / Erro de Vínculo) -->
+        <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${sucesso}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${erro}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <h2>Marketplaces</h2>
+        <a th:href="@{/marketplaces/novo}" class="btn btn-primary">+ Novo Marketplace</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Segmento</th>
+                <th>Sede (UF)</th>
+                <th>Modelo</th>
+                <th>GMV Anual</th>
+                <th>Take Rate (%)</th>
+                <th class="text-end">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="mk : ${marketplaces}">
+                <td th:text="${mk.marketplaceId}"></td>
+                <td class="fw-semibold" th:text="${mk.nomeMarketplace}"></td>
+                <td th:text="${mk.segmento}"></td>
+                <td th:text="${mk.cidadeSede + ' - ' + mk.estado}"></td>
+                <td th:text="${mk.modeloNegocio}"></td>
+                <td th:text="${#numbers.formatCurrency(mk.gmvAnualEstimado)}"></td>
+                <td th:text="${mk.takeRateMedioPercentual + '%'}"></td>
+                <td class="text-end">
+                    <a th:href="@{/marketplaces/editar/{id}(id=${mk.marketplaceId})}" class="btn btn-sm btn-outline-warning">Editar</a>
+                    <a th:href="@{/marketplaces/excluir/{id}(id=${mk.marketplaceId})}" class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Deseja realmente excluir este marketplace?');">Excluir</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
